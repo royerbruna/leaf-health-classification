@@ -22,3 +22,33 @@ class Evaluator:
 
         return results.groupby("model")[metrics].agg(["mean", "std"])
 
+
+    def calculate_species_metrics(self, predictions: pd.DataFrame) -> pd.DataFrame:
+        """Calculate classification metrics for each species and model."""
+        results = []
+
+        for (species, model), group in predictions.groupby(["species", "model"]):
+            y_true = group["actual"]
+            y_pred = group["predicted"]
+
+            if (y_true == 1).any():
+                metrics = self.calculate_metrics(y_true, y_pred)
+            else:
+                # If there are no diaseased samples: positive class metrics are marked as NaN
+                metrics = {
+                    "accuracy": accuracy_score(y_true, y_pred),
+                    "precision": float("nan"),
+                    "recall": float("nan"),
+                    "f1_score": float("nan"),
+                }
+
+            results.append({
+                "species": species,
+                "model": model,
+                "images": len(group),
+                "healthy_images": (y_true == 0).sum(),
+                "diseased_images": (y_true == 1).sum(),
+                **metrics,
+            })
+
+        return pd.DataFrame(results)

@@ -38,7 +38,7 @@ class ModelTrainer:
     def train_decision_tree(self, X_train, y_train):
         """Train a decision tree classifier."""
         # Defaults: criterion='gini', splitter='best', max_depth=None.
-        model = DecisionTreeClassifier()
+        model = DecisionTreeClassifier(random_state=42) # Fix the random seed to ensure reproducible results across runs.
 
         model.fit(X_train, y_train)
 

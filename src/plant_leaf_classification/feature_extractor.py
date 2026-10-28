@@ -81,4 +81,3 @@ class FeatureExtractor:
                 features[f"{channel}_hist_{bin_index}"] = value
 
         return features
-

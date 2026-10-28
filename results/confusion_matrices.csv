@@ -1,0 +1,10 @@
+feature_set,model,tn,fp,fn,tp
+rgb_basic,Logistic Regression,9922,5162,2559,36662
+rgb_basic,KNN,12770,2314,1889,37332
+rgb_basic,Decision Tree,11687,3397,3307,35914
+rgb_percentiles,Logistic Regression,10140,4944,2574,36647
+rgb_percentiles,KNN,13188,1896,1641,37580
+rgb_percentiles,Decision Tree,12080,3004,3095,36126
+rgb_histogram,Logistic Regression,10251,4833,2406,36815
+rgb_histogram,KNN,13411,1673,1334,37887
+rgb_histogram,Decision Tree,12364,2720,2803,36418
