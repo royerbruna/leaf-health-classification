@@ -1,8 +1,8 @@
 
 import pandas as pd
 
-from plant_leaf_classification.model_trainer import ModelTrainer
 from plant_leaf_classification.evaluator import Evaluator
+from plant_leaf_classification.model_trainer import ModelTrainer
 
 
 class ExperimentRunner:

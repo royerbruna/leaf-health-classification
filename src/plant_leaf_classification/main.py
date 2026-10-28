@@ -1,16 +1,15 @@
 
-import pandas as pd
-import numpy as np
-
-from plant_leaf_classification.dataset_manager import DatasetManager
-from plant_leaf_classification.feature_extractor import FeatureExtractor
-from plant_leaf_classification.model_trainer import ModelTrainer
-from plant_leaf_classification.evaluator import Evaluator
-from plant_leaf_classification.experiment_runner import ExperimentRunner
-import matplotlib.pyplot as plt
-from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from pathlib import Path
 
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from sklearn.metrics import ConfusionMatrixDisplay, confusion_matrix
+
+from plant_leaf_classification.dataset_manager import DatasetManager
+from plant_leaf_classification.evaluator import Evaluator
+from plant_leaf_classification.experiment_runner import ExperimentRunner
+from plant_leaf_classification.feature_extractor import FeatureExtractor
 
 # Dataset prerequisite: Download PlantVillage before running the experiment.
 # Run from the project root directory: git clone https://github.com/spMohanty/PlantVillage-Dataset.git data/plantvillage
