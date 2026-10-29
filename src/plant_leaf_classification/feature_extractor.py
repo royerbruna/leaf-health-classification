@@ -7,7 +7,8 @@ class FeatureExtractor:
     """Extract numerical color features from leaf images."""
 
     def extract_rgb_basic(self, image_path: str) -> dict:
-        """Calculate the mean and standard deviation of each RGB channel."""
+        """Read an image and convert it from BGR to RGB. Calculate the mean and standard deviation of the red, green, and blue channels, producing six numerical features that describe the image colors."""
+        
         image = cv2.imread(image_path)
 
         if image is None:
@@ -29,7 +30,8 @@ class FeatureExtractor:
 
 
     def extract_rgb_percentiles(self, image_path: str) -> dict:
-        """Extract basic RGB features and the 25th, 50th, and 75th percentiles."""
+        """Extract the mean, standard deviation, and percentiles (25, 50, and 75) of each RGB channel. The percentiles provide additional information about how pixel intensities are distributed, producing a total of fifteen numerical features."""
+
         image = cv2.imread(image_path)
 
         if image is None:
@@ -54,7 +56,8 @@ class FeatureExtractor:
 
 
     def extract_rgb_histogram(self, image_path: str) -> dict:
-        """Extract basic RGB features and normalized color histograms with 16 bins per channel."""
+        """Extract basic RGB statistics and color histograms from an image. Each color channel is divided into sixteen intensity ranges, and the number of pixels in each range is converted into a relative frequency. Together, these measurements produce fifty-four numerical features."""
+
         image = cv2.imread(image_path)
 
         if image is None:

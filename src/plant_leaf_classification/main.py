@@ -17,7 +17,8 @@ from plant_leaf_classification.feature_extractor import FeatureExtractor
 
 
 def save_features(images: pd.DataFrame, extract_method, file_path: str):
-    """Extract and save image features to a CSV file."""
+    """Extract features from each image and combine them with its original information, such as species and class. Save the results in a CSV file so the features can be reused without processing the images again."""
+    
     records = []
 
     for image in images.itertuples(index=False):
@@ -41,7 +42,8 @@ def save_features(images: pd.DataFrame, extract_method, file_path: str):
 
 
 def validate_features():
-    """Validate the consistency of the extracted feature datasets."""
+    """Check whether the three feature datasets were generated correctly. Verify the number of images and features, check for missing or invalid values, and confirm that all datasets contain the same images and labels."""
+
     datasets = {
         "rgb_basic": 6,
         "rgb_percentiles": 15,
@@ -75,7 +77,8 @@ def validate_features():
 
 
 def extract_features():
-    """Extract and save all image feature sets."""
+    """Load the PlantVillage images and assign their binary labels. Extract the three sets of RGB features from the original images and save each set in a separate CSV file."""
+
     manager = DatasetManager("data/plantvillage/raw/color")
     images = manager.map_binary_labels(manager.load_images())
     extractor = FeatureExtractor()
@@ -86,11 +89,14 @@ def extract_features():
 
 
 def run_experiments():
-    """Run cross-validation experiments for all feature sets."""
+    """Balance the dataset and divide it into five stratified folds. Run the three classifiers with each feature set, always using the same images and folds. Save the evaluation results and calculate the average performance of each model."""
+
     manager = DatasetManager("data/plantvillage/raw/color")
 
     base_data = pd.read_csv("data/features/rgb_basic.csv")
     base_data = base_data.sort_values("image_path").reset_index(drop=True)
+
+    base_data = manager.balance_binary_classes(base_data)
 
     folds = manager.create_stratified_folds(base_data)
 
@@ -105,6 +111,7 @@ def run_experiments():
 
     for name, path in datasets.items():
         data = pd.read_csv(path)
+        data = data[data["image_path"].isin(base_data["image_path"])]
         data = data.sort_values("image_path").reset_index(drop=True)
 
         assert data["image_path"].equals(base_data["image_path"])
@@ -122,7 +129,8 @@ def run_experiments():
 
 
 def create_experiment_summary():
-    """Combine the aggregated results of all feature sets."""
+    """Combine the results from all nine experimental configurations. Calculate the mean and standard deviation of each metric across the five folds and save the summary in a single CSV file."""
+
     datasets = {
         "RGB Basic": "results/rgb_basic_folds.csv",
         "RGB Percentiles": "results/rgb_percentiles_folds.csv",
@@ -153,11 +161,14 @@ def create_experiment_summary():
 
 
 def analyze_species():
-    """Evaluate classification performance by species for each feature set."""
+    """Analyze how each classifier performs on different plant species. Collect predictions from the five folds and balance the healthy and diseased images within each species. Calculate and save the metricsfor each model using the balanced samples."""
+
     manager = DatasetManager("data/plantvillage/raw/color")
 
     base_data = pd.read_csv("data/features/rgb_basic.csv")
     base_data = base_data.sort_values("image_path").reset_index(drop=True)
+
+    base_data = manager.balance_binary_classes(base_data)
 
     folds = manager.create_stratified_folds(base_data)
 
@@ -174,6 +185,7 @@ def analyze_species():
 
     for name, path in datasets.items():
         data = pd.read_csv(path)
+        data = data[data["image_path"].isin(base_data["image_path"])]
         data = data.sort_values("image_path").reset_index(drop=True)
 
         assert data[metadata].equals(base_data[metadata])
@@ -191,11 +203,14 @@ def analyze_species():
 
 
 def plot_confusion_matrices():
-    """Generate confusion matrices for each feature set and classifier."""
+    """Generate confusion matrices for each classifier and feature set. Use predictions from the five folds to count correct and incorrect classifications of healthy and diseased leaves. Save the matrices as images and their numerical results in a CSV file."""
+
     manager = DatasetManager("data/plantvillage/raw/color")
 
     base_data = pd.read_csv("data/features/rgb_basic.csv")
     base_data = base_data.sort_values("image_path").reset_index(drop=True)
+
+    base_data = manager.balance_binary_classes(base_data)
 
     folds = manager.create_stratified_folds(base_data)
 
@@ -218,6 +233,7 @@ def plot_confusion_matrices():
 
     for name, title in datasets.items():
         data = pd.read_csv(f"data/features/{name}.csv")
+        data = data[data["image_path"].isin(base_data["image_path"])]
         data = data.sort_values("image_path").reset_index(drop=True)
 
         assert data[metadata].equals(base_data[metadata])
@@ -281,7 +297,7 @@ def plot_confusion_matrices():
 
         fig.text(
             0.5, 0.02,
-            "Note: Counts represent all 54,305 images evaluated across 5 stratified cross-validation folds.\n"
+            f"Note: Counts represent all {len(base_data):,} balanced images evaluated across 5 stratified cross-validation folds.\n"
             "Each image is evaluated once. Percentages are calculated relative to each actual class (row).",
             ha="center",
             fontsize=9
@@ -304,8 +320,7 @@ def plot_confusion_matrices():
 
 
 def plot_f1_scores():
-    """Plot mean F1-score and standard deviation across five folds."""
-    # F1-score balances precision and recall, which is useful for our imbalanced dataset (72% diseased, 28% healthy).
+    """Create a bar chart comparing the F1-score of all nine experimental configurations. Show the average score and standard deviation from the five folds to compare model performance and consistency."""
 
     data = pd.read_csv("results/experiment_summary.csv")
 
@@ -353,7 +368,10 @@ def plot_f1_scores():
     ax.set_xlabel("Feature Set")
     ax.set_ylabel("Mean F1-score (%)")
     ax.set_ylim(0, 110)
+    ax.set_yticks(range(0, 101, 10))
     ax.tick_params(axis="x", rotation=0)
+    ax.set_axisbelow(True)
+    ax.grid(axis="y", linestyle="--", linewidth=1, alpha=0.7, color="gray")
     ax.legend(title="Classifier")
 
     fig.text(
@@ -374,7 +392,7 @@ def plot_f1_scores():
 
 
 def plot_species_accuracy():
-    """Compare classifier accuracy across plant species."""
+    """Create a horizontal bar chart comparing model accuracy across plant species using the RGB histogram features. Display the results of the three classifiers for each species after balancing its samples."""
     # Accuracy is calculated from pooled validation predictions across five stratified cross-validation folds.
 
     data = pd.read_csv("results/rgb_histogram_species.csv")
@@ -405,7 +423,7 @@ def plot_species_accuracy():
     ax.set_xlabel("Accuracy (%)")
     ax.set_ylabel("Species")
     ax.set_xlim(0, 108)
-    ax.set_xticks(range(0, 101, 20))
+    ax.set_xticks(range(0, 101, 10))
 
     # Enable grid lines to facilitate comparisons.
     ax.set_axisbelow(True)
@@ -438,7 +456,7 @@ def plot_species_accuracy():
 
 
 def main():
-    """Run the complete plant leaf classification workflow."""
+    """Run the complete plant leaf classification experiment. Prepare and validate the datasets, train and evaluate the classifiers, analyze the results by species, and generate the comparison charts."""
 
     # Prepare output directories
     Path("data/features").mkdir(parents=True, exist_ok=True)

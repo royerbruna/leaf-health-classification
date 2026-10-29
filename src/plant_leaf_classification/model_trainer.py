@@ -5,12 +5,15 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.tree import DecisionTreeClassifier
 
+from plant_leaf_classification.config import RANDOM_STATE
+
 
 class ModelTrainer:
     """Train supervised machine learning classifiers."""
 
     def train_logistic_regression(self, X_train, y_train):
-        """Train a logistic regression model with standardized features."""
+        """Train a Logistic Regression classifier using standardized features. The data is scaled before training so that features with different numerical ranges can be compared fairly. The trained model and scaler are returned together in a pipeline."""
+        
         model = make_pipeline(
             StandardScaler(),
             # Defaults: L2 regularization, C=1.0, lbfgs solver, max_iter=100.
@@ -23,7 +26,8 @@ class ModelTrainer:
 
 
     def train_knn(self, X_train, y_train):
-        """Train a KNN classifier with standardized features."""
+        """Train a KNN classifier using standardized features. Scaling prevents features with larger values from dominating distance calculations. The model uses five nearest neighbors by default to classify new images."""
+
         model = make_pipeline(
             StandardScaler(),
             # Defaults: n_neighbors=5, weights='uniform', metric='minkowski', p=2.
@@ -36,9 +40,10 @@ class ModelTrainer:
 
 
     def train_decision_tree(self, X_train, y_train):
-        """Train a decision tree classifier."""
+        """Train a Decision Tree classifier using the extracted image features. The model learns a sequence of rules to separate healthy and diseased leaves. It uses the default parameters and a fixed random seed to make the results reproducible."""
+
         # Defaults: criterion='gini', splitter='best', max_depth=None.
-        model = DecisionTreeClassifier(random_state=42) # Fix the random seed to ensure reproducible results across runs.
+        model = DecisionTreeClassifier(random_state=RANDOM_STATE)
 
         model.fit(X_train, y_train)
 

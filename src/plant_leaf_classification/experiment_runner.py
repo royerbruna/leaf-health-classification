@@ -9,7 +9,8 @@ class ExperimentRunner:
     """Run classification experiments using stratified cross-validation."""
 
     def run_experiment(self, data: pd.DataFrame, folds: list) -> pd.DataFrame:
-        """Train and evaluate all three classifiers across five folds."""
+        """Run the three classifiers using the five predefined folds. In each round, the models are trained on four folds and tested on the remaining one. The evaluation metrics are calculated and saved for each model and fold."""
+        
         trainer = ModelTrainer()
         evaluator = Evaluator()
 
@@ -51,7 +52,8 @@ class ExperimentRunner:
 
 
     def collect_species_predictions(self, data: pd.DataFrame, folds: list) -> pd.DataFrame:
-        """Collect validation predictions by species across all folds."""
+        """Collect predictions from the three classifiers across the five folds. For each validation image, save its path, species, correct label, and predicted label. These records are later used to evaluate model performance separately for each species."""
+
         trainer = ModelTrainer()
 
         X = data.drop(columns=[
@@ -79,6 +81,7 @@ class ExperimentRunner:
                 predictions = model.predict(X_val)
 
                 results.append(pd.DataFrame({
+                    "image_path": data.iloc[val_indices]["image_path"].to_numpy(),
                     "species": data.iloc[val_indices]["species"].to_numpy(),
                     "model": model_name,
                     "actual": y.iloc[val_indices].to_numpy(),
