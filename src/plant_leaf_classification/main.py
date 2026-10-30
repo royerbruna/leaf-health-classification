@@ -18,7 +18,7 @@ from plant_leaf_classification.feature_extractor import FeatureExtractor
 
 def save_features(images: pd.DataFrame, extract_method, file_path: str):
     """Extract features from each image and combine them with its original information, such as species and class. Save the results in a CSV file so the features can be reused without processing the images again."""
-    
+
     records = []
 
     for image in images.itertuples(index=False):
@@ -224,8 +224,8 @@ def plot_confusion_matrices():
     metadata = ["image_path", "species", "original_class", "binary_label"]
 
     cell_labels = [
-        ["True Negative (TN)", "False Positive (FP)"],
-        ["False Negative (FN)", "True Positive (TP)"],
+        ["TN", "FP"],
+        ["FN", "TP"],
     ]
 
     runner = ExperimentRunner()
@@ -242,7 +242,7 @@ def plot_confusion_matrices():
 
         predictions = runner.collect_species_predictions(data, folds)
 
-        fig, axes = plt.subplots(1, 3, figsize=(15, 5))
+        fig, axes = plt.subplots(1, 3, figsize=(18, 6.5))
 
         for model_name, ax in zip(models, axes):
             model_data = predictions[predictions["model"] == model_name]
@@ -273,14 +273,20 @@ def plot_confusion_matrices():
 
                     ax.text(
                         col, row,
-                        f"{cell_labels[row][col]}\n{value:,} cases\n{percentage:.1f}%",
+                        f"{cell_labels[row][col]}\n{value:,}\n{percentage:.1f}%",
                         ha="center",
                         va="center",
-                        fontsize=9,
+                        fontsize=20,
+                        fontweight="bold",
                         color=color
                     )
 
-            ax.set_title(model_name)
+            ax.set_title(model_name, fontsize=22)
+            ax.set_title(model_name, fontsize=22)
+            ax.set_xlabel("Predicted label", fontsize=18)
+            ax.set_ylabel("True label", fontsize=18)
+            ax.tick_params(axis="x", labelsize=16)
+            ax.tick_params(axis="y", labelsize=16)
 
             tn, fp, fn, tp = matrix.ravel()
 
@@ -293,15 +299,7 @@ def plot_confusion_matrices():
                 "tp": tp,
             })
 
-        fig.suptitle(f"Confusion Matrices - {title}")
-
-        fig.text(
-            0.5, 0.02,
-            f"Note: Counts represent all {len(base_data):,} balanced images evaluated across 5 stratified cross-validation folds.\n"
-            "Each image is evaluated once. Percentages are calculated relative to each actual class (row).",
-            ha="center",
-            fontsize=9
-        )
+        fig.suptitle(f"Confusion Matrices - {title}", fontsize=28)
 
         fig.tight_layout(rect=(0, 0.07, 1, 0.95))
         fig.savefig(
@@ -340,12 +338,13 @@ def plot_f1_scores():
     means = means.loc[order]
     stds = stds.loc[order, means.columns]
 
-    fig, ax = plt.subplots(figsize=(13, 7))
+    fig, ax = plt.subplots(figsize=(15, 8))
 
     means.plot(
         kind="bar",
         yerr=stds,
         capsize=4,
+        width=0.9,
         ax=ax
     )
 
@@ -361,26 +360,19 @@ def plot_f1_scores():
             container,
             labels=labels,
             padding=4,
-            fontsize=9
+            fontsize=16
         )
 
-    ax.set_title("F1-score Comparison")
-    ax.set_xlabel("Feature Set")
-    ax.set_ylabel("Mean F1-score (%)")
-    ax.set_ylim(0, 110)
+    ax.set_title("F1-score Comparison", fontsize=24)
+    ax.set_xlabel("")
+    ax.set_ylabel("Mean F1-score (%)", fontsize=18)
+    ax.set_ylim(0, 105)
     ax.set_yticks(range(0, 101, 10))
-    ax.tick_params(axis="x", rotation=0)
+    ax.tick_params(axis="x", rotation=0, labelsize=18)
+    ax.tick_params(axis="y", labelsize=18)
     ax.set_axisbelow(True)
     ax.grid(axis="y", linestyle="--", linewidth=1, alpha=0.7, color="gray")
-    ax.legend(title="Classifier")
-
-    fig.text(
-        0.5, 0.03,
-        "Note: Results show mean F1-score ± standard deviation across 5 stratified cross-validation folds.\n"
-        "Error bars represent ±1 standard deviation; pp = percentage points. Positive class: Diseased.",
-        ha="center",
-        fontsize=9
-    )
+    ax.legend(title="Classifier", fontsize=18, title_fontsize=12)
 
     fig.tight_layout(rect=(0, 0.11, 1, 1))
     fig.savefig(
@@ -405,9 +397,13 @@ def plot_species_accuracy():
 
     accuracy = accuracy.sort_values("KNN")
 
-    fig, ax = plt.subplots(figsize=(13, 9))
+    fig, ax = plt.subplots(figsize=(15, 10))
 
-    accuracy.plot(kind="barh", ax=ax)
+    accuracy.plot(
+        kind="barh",
+        width=0.75,
+        ax=ax
+    )
 
     # Display only the accuracy percentage on each bar.
     for bars in ax.containers:
@@ -415,33 +411,27 @@ def plot_species_accuracy():
             ax.bar_label(
                 bars,
                 fmt="%.1f%%",
-                padding=3,
-                fontsize=8
+                padding=4,
+                fontsize=16
             )
 
-    ax.set_title("Accuracy by Species - RGB Histogram")
-    ax.set_xlabel("Accuracy (%)")
-    ax.set_ylabel("Species")
+    ax.set_title("Accuracy by Species - RGB Histogram", fontsize=24)
+    ax.set_xlabel("Accuracy (%)", fontsize=20)
+    ax.set_ylabel("Species", fontsize=22, labelpad=-20)
     ax.set_xlim(0, 108)
     ax.set_xticks(range(0, 101, 10))
+
+    ax.tick_params(axis="x", labelsize=16)
+    ax.tick_params(axis="y", labelsize=16)
 
     # Enable grid lines to facilitate comparisons.
     ax.set_axisbelow(True)
     ax.grid(axis="x", linestyle="--", linewidth=1.2, alpha=0.7, color="gray")
 
     ax.legend(
-        title="Classifier",
-        loc="upper center",
-        bbox_to_anchor=(0.5, -0.07),
-        ncol=3
-    )
-
-    fig.text(
-        0.5, 0.02,
-        "Note: Accuracy represents correctly classified images as a percentage of each species' total.\n"
-        "Results are based on pooled validation predictions across 5 stratified cross-validation folds.",
-        ha="center",
-        fontsize=9
+        title=None,
+        fontsize=16,
+        loc="lower right"
     )
 
     fig.tight_layout(rect=(0, 0.13, 1, 1))
